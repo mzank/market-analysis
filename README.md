@@ -130,6 +130,9 @@ market-analysis/
 ├── examples/
 │   └── example_sp500_vs_bitcoin.py
 │
+├── tests/
+│   └── test_utils.py
+│
 ├── pyproject.toml
 └── README.md
 ```
@@ -144,6 +147,9 @@ The project includes configuration for:
 - flake8
 - pylint
 - mypy
+- pytest
+
+### Formatting
 
 Run formatting:
 ```bash
@@ -151,11 +157,32 @@ black .
 isort .
 ```
 
+### Static Analysis
+
 Run static checks:
 ```bash
 flake8
 pylint src/
 mypy src/
+```
+
+### Testing
+
+The project uses `pytest` for automated testing.
+
+Install development dependencies:
+```bash
+pip install -e .[dev]
+```
+
+Run tests:
+```bash
+pytest
+```
+
+Run with coverage:
+```bash
+pytest --cov=market_analysis
 ```
 
 ---
