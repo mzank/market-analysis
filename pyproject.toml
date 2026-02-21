@@ -28,8 +28,13 @@ dev = [
     "flake8",
     "pylint",
     "mypy",
-    "pytest"
+    "pytest",
+    "pytest-cov"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
