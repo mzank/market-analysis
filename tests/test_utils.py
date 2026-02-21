@@ -62,4 +62,3 @@ def test_empty_string():
 )
 def test_various_cases(input_string, expected):
     assert safe_filename(input_string) == expected
-    
