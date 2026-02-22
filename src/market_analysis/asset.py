@@ -7,6 +7,8 @@ via yfinance, caching via CacheManager, and statistical analysis, and
 visualization of price time series.
 """
 
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -300,7 +302,11 @@ class Asset:
         plt.tight_layout()
 
         if save_path:
-            save_path = safe_filename(save_path)
+            # separate dir and filename
+            dir_name = os.path.dirname(save_path)
+            file_name = os.path.basename(save_path)
+            file_name = safe_filename(file_name)
+            save_path = os.path.join(dir_name, file_name)
             plt.savefig(save_path, dpi=150)
             print(f"Saved asset stats plot to {save_path}")
         else:
