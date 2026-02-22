@@ -131,6 +131,7 @@ market-analysis/
 │   └── example_sp500_vs_bitcoin.py
 │
 ├── tests/
+│   ├── test_asset.py
 │   └── test_utils.py
 │
 ├── pyproject.toml
