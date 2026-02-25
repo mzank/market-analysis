@@ -201,3 +201,18 @@ def test_plot_asset_stats_log(monkeypatch, sample_prices, mock_cache_manager):
     asset.plot_asset_stats(
         start_date="2020-01-01", end_date="2020-01-05", log_price=True
     )
+
+
+def test_plot_asset_stats_non_daily_frequency(
+    monkeypatch, sample_prices, mock_cache_manager
+):
+    asset = Asset("TEST", "Test Asset", mock_cache_manager)
+    asset.df = sample_prices
+
+    monkeypatch.setattr("matplotlib.pyplot.show", lambda: None)
+
+    asset.plot_asset_stats(
+        start_date="2020-01-01",
+        end_date="2020-01-05",
+        frequency="ME",
+    )
