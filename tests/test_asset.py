@@ -116,6 +116,23 @@ def test_fetch_with_timezone(monkeypatch, mock_cache_manager):
     assert result.index.tz is None
 
 
+def test_fetch_with_close_column(monkeypatch, mock_cache_manager):
+    df = pd.DataFrame(
+        {"Close": [100, 101, 102]},
+        index=pd.date_range("2020-01-01", periods=3, freq="D"),
+    )
+
+    mock_ticker = Mock()
+    mock_ticker.history.return_value = df
+    monkeypatch.setattr("market_analysis.asset.yf.Ticker", lambda ticker: mock_ticker)
+
+    asset = Asset("TEST", "Test Asset", mock_cache_manager)
+    result = asset.fetch()
+
+    assert result is not None
+    assert "AdjClose" in result.columns
+
+
 # --- Tests for print_asset_stats() ---
 
 
