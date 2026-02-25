@@ -157,6 +157,22 @@ def test_print_asset_stats_insufficient(capsys, mock_cache_manager):
     assert "insufficient data" in captured.out
 
 
+def test_print_asset_stats_non_daily_frequency(
+    capsys, sample_prices, mock_cache_manager
+):
+    asset = Asset("TEST", "Test Asset", mock_cache_manager)
+    asset.df = sample_prices
+
+    asset.print_asset_stats(
+        start_date="2020-01-01",
+        end_date="2020-01-05",
+        frequency="ME",
+    )
+
+    captured = capsys.readouterr()
+    assert "Frequency: ME" in captured.out
+
+
 # --- Tests for plot_asset_stats() ---
 
 
