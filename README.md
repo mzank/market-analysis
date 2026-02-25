@@ -132,6 +132,7 @@ market-analysis/
 │
 ├── tests/
 │   ├── test_asset.py
+│   ├── test_cachemanager.py
 │   └── test_utils.py
 │
 ├── pyproject.toml
