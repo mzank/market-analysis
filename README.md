@@ -184,7 +184,7 @@ pytest
 
 Run with coverage:
 ```bash
-pytest --cov=market_analysis
+pytest --cov=market_analysis --cov-report=term-missing
 ```
 
 ---
