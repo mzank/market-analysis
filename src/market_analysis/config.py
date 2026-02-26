@@ -6,7 +6,7 @@ parallelization parameters, and storage configuration.
 """
 
 CACHE_DIR = "cache_history"
-CACHE_MAX_AGE = 0
+CACHE_MAX_AGE = 1
 SCHEMA_VERSION = "1.0"
 PARQUET_ENGINE = "pyarrow"
 MAX_WORKERS = 6
