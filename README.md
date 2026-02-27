@@ -100,6 +100,28 @@ sp500.plot_asset_stats(
 )
 ```
 
+## Frequency Parameter
+
+Several functions such as `print_asset_stats()` and `plot_asset_stats()` accept a `frequency` parameter to control the resampling interval used for return and risk calculations.
+
+### Supported Frequency Options
+
+| Value  | Description | Meaning                               |
+| ------ | ----------- | ------------------------------------- |
+| `"D"`  | Daily       | Uses daily data without resampling    |
+| `"ME"` | Month End   | Resamples data to month-end frequency |
+| `"YE"` | Year End    | Resamples data to year-end frequency  |
+
+### Example
+
+```python
+sp500.print_asset_stats(
+    start_date="2015-01-01",
+    end_date="2024-01-01",
+    frequency="ME",  # Monthly statistics
+)
+```
+
 ---
 
 ## Generated Plots
