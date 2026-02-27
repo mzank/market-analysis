@@ -133,6 +133,7 @@ market-analysis/
 ├── tests/
 │   ├── test_asset.py
 │   ├── test_cachemanager.py
+│   ├── test_cli.py
 │   ├── test_datafetcher.py
 │   └── test_utils.py
 │
