@@ -140,6 +140,9 @@ The visualization includes the following panels. Plots can be displayed or saved
 ```text
 market-analysis/
 │
+├── examples/
+│   └── example_sp500_vs_bitcoin.py
+│
 ├── src/
 │   └── market_analysis/
 │       ├── asset.py
@@ -149,9 +152,6 @@ market-analysis/
 │       ├── datafetcher.py
 │       └── utils.py
 │
-├── examples/
-│   └── example_sp500_vs_bitcoin.py
-│
 ├── tests/
 │   ├── test_asset.py
 │   ├── test_cachemanager.py
@@ -159,8 +159,10 @@ market-analysis/
 │   ├── test_datafetcher.py
 │   └── test_utils.py
 │
-├── pyproject.toml
-└── README.md
+├── CITATION.cff
+├── LICENSE
+├── README.md
+└── pyproject.toml
 ```
 
 ---
