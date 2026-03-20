@@ -27,7 +27,7 @@ The project uses a local caching mechanism to avoid redundant downloads and impr
 
 ### Cache Settings
 
-The caching behavior is controlled by constants in `src/config.py`:
+The caching behavior is controlled by constants in `src/market_analysis/config.py`:
 
 | Setting          | Default Value     | Description                                           |
 | ---------------- | ----------------- | ----------------------------------------------------- |
