@@ -21,6 +21,50 @@ Financial asset analysis and correlation toolkit for Python.
 
 ---
 
+## Caching
+
+The project uses a local caching mechanism to avoid redundant downloads and improve performance when working with historical data.
+
+### Cache Settings
+
+The caching behavior is controlled by constants in `src/config.py`:
+
+| Setting          | Default Value     | Description                                           |
+| ---------------- | ----------------- | ----------------------------------------------------- |
+| `CACHE_DIR`      | `"cache_history"` | Directory where cached data is stored.                |
+| `CACHE_MAX_AGE`  | `1`               | Maximum cache age in days before data is refreshed.   |
+| `SCHEMA_VERSION` | `"1.0"`           | Version of the cached data schema.                    |
+| `PARQUET_ENGINE` | `"pyarrow"`       | Engine used for storing Parquet files.                |
+| `MAX_WORKERS`    | `6`               | Maximum number of parallel threads for fetching data. |
+
+*Note:* `MAX_WORKERS` controls the maximum number of concurrent threads when fetching data from Yahoo Finance, improving speed for multiple assets.
+
+### Cache Location
+
+According to the default config, downloaded data is stored locally in the following directory:
+
+```text
+cache_history/
+```
+
+This directory is created automatically in your working directory if it does not already exist.
+
+### Cache Duration
+
+According to the default config, cached data is considered valid for 1 day. After this period, the data will be refreshed automatically on the next request.
+
+### Disabling Cache
+
+Caching is always enabled by default. There is currently no CLI flag or configuration option to disable it temporarily.
+
+To manually clear the cache, delete the cache directory:
+
+```bash
+rm -rf cache_history/
+```
+
+---
+
 ## Requirements
 
 - Python >= 3.12
