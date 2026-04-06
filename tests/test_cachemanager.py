@@ -55,7 +55,7 @@ def test_is_fresh_with_recent_data(cache_manager, sample_df):
 def test_is_fresh_with_old_data(cache_manager):
     old_date = pd.Timestamp.now().normalize() - timedelta(days=365)
     index = pd.bdate_range(end=old_date, periods=5)
-    df = pd.DataFrame({"Close": range(5)}, index=index)
+    df = pd.DataFrame({"Close": range(len(index))}, index=index)
 
     assert cache_manager.is_fresh(df) is False
 
