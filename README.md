@@ -189,6 +189,7 @@ market-analysis/
 │
 ├── src/
 │   └── market_analysis/
+│       ├── __init__.py
 │       ├── asset.py
 │       ├── cachemanager.py
 │       ├── cli.py
