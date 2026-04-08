@@ -26,7 +26,7 @@ Output files are saved as:
     Stats_<Asset Label>.pdf
 """
 
-from market_analysis.datafetcher import DataFetcher
+from market_analysis import DataFetcher
 
 
 def main() -> None:
