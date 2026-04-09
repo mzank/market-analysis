@@ -1,5 +1,8 @@
 # market-analysis
 
+![Python](https://img.shields.io/badge/python-3-blue)
+![License](https://img.shields.io/badge/license-Apache%202.0-green)
+
 Financial asset analysis and correlation toolkit for Python.
 
 `market-analysis` allows you to download historical price data, cache it locally, compute performance statistics, and generate professional financial charts.
