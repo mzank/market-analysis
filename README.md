@@ -118,7 +118,7 @@ market-analysis \
 ## Python API Example
 
 ```python
-from market_analysis.datafetcher import DataFetcher
+from market_analysis import DataFetcher
 
 ticker_config = {
     "^GSPC": {"label": "S&P 500"},
