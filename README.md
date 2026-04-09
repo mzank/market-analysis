@@ -105,12 +105,19 @@ market-analysis --tickers ^GSPC BTC-USD GC=F --start 2015-01-01
 | `--start`   | Start date (YYYY-MM-DD)             |
 | `--end`     | End date (optional, default: today) |
 
-Example:
+### Examples
+
+Single asset:
 ```bash
-market-analysis \
-  --tickers ^GSPC BTC-USD \
-  --start 2018-01-01 \
-  --end 2024-01-01
+market-analysis --tickers ^GSPC --start 2020-01-01
+```
+Multiple assets:
+```bash
+market-analysis --tickers ^GSPC ^ATX BTC-USD --start 2018-01-01
+```
+With end date:
+```bash
+market-analysis --tickers ^GSPC --start 2010-01-01 --end 2020-01-01
 ```
 
 ---
