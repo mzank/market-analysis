@@ -36,7 +36,8 @@ def cache_manager(tmp_path):
 def sample_df():
     """Create a simple DataFrame with recent business-day index."""
     today = pd.Timestamp.now().normalize()
-    index = pd.bdate_range(end=today, periods=5)
+    # index = pd.bdate_range(end=today, periods=5)
+    index = pd.bdate_range(start=today - pd.tseries.offsets.BDay(4), periods=5)
     df = pd.DataFrame({"Close": range(5)}, index=index)
     return df
 
