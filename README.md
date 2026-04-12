@@ -2,6 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-3-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-green)
+![Pytest](https://img.shields.io/badge/tests-pytest-blue)
 
 Financial asset analysis and correlation toolkit for Python.
 
