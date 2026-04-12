@@ -36,7 +36,6 @@ def cache_manager(tmp_path):
 def sample_df():
     """Create a simple DataFrame with recent business-day index."""
     today = pd.Timestamp.now().normalize()
-    # index = pd.bdate_range(end=today, periods=5)
     index = pd.bdate_range(start=today - pd.tseries.offsets.BDay(4), periods=5)
     df = pd.DataFrame({"Close": range(5)}, index=index)
     return df
@@ -55,8 +54,8 @@ def test_is_fresh_with_recent_data(cache_manager, sample_df):
 
 def test_is_fresh_with_old_data(cache_manager):
     old_date = pd.Timestamp.now().normalize() - timedelta(days=365)
-    index = pd.bdate_range(end=old_date, periods=5)
-    df = pd.DataFrame({"Close": range(len(index))}, index=index)
+    index = pd.bdate_range(start=old_date - pd.tseries.offsets.BDay(4), periods=5)
+    df = pd.DataFrame({"Close": range(5)}, index=index)
 
     assert cache_manager.is_fresh(df) is False
 
