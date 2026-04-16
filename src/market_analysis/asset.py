@@ -257,9 +257,10 @@ class Asset:
 
         fig, axes = plt.subplots(5, 1, figsize=figsize, sharex=True)
 
-        # --- Titel ---
+        # --- Titel ---        
         fig.suptitle(
-            f"{self.label} (ticker: {self.ticker}, frequency: {frequency})\n{prices.index[0].date()} - {prices.index[-1].date()}",
+            f"{self.label} (ticker: {self.ticker}, frequency: {frequency})\n"
+            f"{prices.index[0].date()} - {prices.index[-1].date()}",
             fontsize=16,
             fontweight="bold",
         )
@@ -295,7 +296,8 @@ class Asset:
         axes[4].plot(rolling_sharpe.index, rolling_sharpe, color="green")
         axes[4].axhline(0, color="black", lw=1)
         axes[4].set_title(
-            f"Rolling sharpe ratio ({sharpe_window} days, risk free rate {risk_free_rate*100} % p.a.)"
+            f"Rolling sharpe ratio ({sharpe_window} days, "
+            f"risk free rate {risk_free_rate*100} % p.a.)"
         )
         axes[4].grid(True, alpha=0.3)
 
