@@ -257,7 +257,7 @@ class Asset:
 
         fig, axes = plt.subplots(5, 1, figsize=figsize, sharex=True)
 
-        # --- Titel ---        
+        # --- Titel ---
         fig.suptitle(
             f"{self.label} (ticker: {self.ticker}, frequency: {frequency})\n"
             f"{prices.index[0].date()} - {prices.index[-1].date()}",
