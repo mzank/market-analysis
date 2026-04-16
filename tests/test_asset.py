@@ -17,7 +17,6 @@ Tests ensure the correctness of outputs, proper cache usage, and that
 plotting functions execute without errors.
 """
 
-import re
 from unittest.mock import Mock
 
 import pandas as pd
