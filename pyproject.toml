@@ -32,6 +32,13 @@ dev = [
     "pytest-cov"
 ]
 
+docs = [
+    "sphinx",
+    "sphinx-autodoc2",
+    "myst-parser",
+    "sphinx-rtd-theme"
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra -q"
