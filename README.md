@@ -1,12 +1,15 @@
 # market-analysis
 
-![Python](https://img.shields.io/badge/python-3-blue)
+![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 ![Pytest](https://img.shields.io/badge/tests-pytest-blue)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://mzank.github.io/market-analysis/)
 
 Financial asset analysis and correlation toolkit for Python.
 
-`market-analysis` allows you to download historical price data, cache it locally, compute performance statistics, and generate professional financial charts.
+ **Documentation:** https://mzank.github.io/market-analysis/
+
+`market-analysis` allows you to download historical price data, cache it locally, compute performance statistics, and generate multi-panel financial charts suitable for analysis and reporting.
 
 ---
 
@@ -98,7 +101,7 @@ pip install -e .[dev]
 The CLI downloads data and prints performance statistics per asset. After installation, the CLI command is available:
 
 ```bash
-market-analysis --tickers ^GSPC BTC-USD GC=F --start 2015-01-01
+market-analysis --tickers "^GSPC" "BTC-USD" "GC=F" --start 2015-01-01
 ```
 
 ### Parameters
@@ -195,6 +198,10 @@ The visualization includes the following panels. Plots can be displayed or saved
 ```text
 market-analysis/
 │
+├── docs/
+│   ├── conf.py
+│   └── index.md
+│
 ├── examples/
 │   └── example_sp500_vs_bitcoin.py
 │
@@ -220,6 +227,34 @@ market-analysis/
 ├── README.md
 └── pyproject.toml
 ```
+
+---
+
+## Documentation
+
+**Online docs:** https://mzank.github.io/market-analysis/
+
+The project documentation is built using Sphinx and `autodoc2`.
+
+### Local Build
+
+To build the documentation locally, first install the documentation dependencies:
+
+```bash
+pip install -e .[docs]
+```
+
+Then run the Sphinx build:
+
+```bash
+sphinx-build -b html docs docs/_build/html
+```
+
+The generated HTML files will be available in the `docs/_build/html/` directory.
+
+### Automated Deployment
+
+The documentation is automatically built and deployed to GitHub Pages on every push to the `main` branch via GitHub Actions.
 
 ---
 
