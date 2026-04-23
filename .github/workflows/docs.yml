@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOCS_DIR: doc
-  BUILD_DIR: doc/_build/html
+  DOCS_DIR: docs
+  BUILD_DIR: docs/_build/html
 
 jobs:
   build:
