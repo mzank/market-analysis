@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from pandas._typing import TimestampConvertibleTypes
 
+from .cachemanager import CacheManager
 from .utils import safe_filename
 
 
@@ -25,7 +27,7 @@ class Asset:
     computing summary statistics and generating standard financial plots.
     """
 
-    def __init__(self, ticker, label, cache_manager):
+    def __init__(self, ticker: str, label: str, cache_manager: CacheManager) -> None:
         """
         Initialize an Asset instance.
 
@@ -42,9 +44,9 @@ class Asset:
         self.ticker = ticker
         self.label = label
         self.cache_manager = cache_manager
-        self.df = None
+        self.df: pd.DataFrame | None = None
 
-    def fetch(self):
+    def fetch(self) -> pd.DataFrame | None:
         """
         Fetch historical price data for the asset.
 
@@ -54,9 +56,9 @@ class Asset:
 
         Returns
         -------
-        pandas.DataFrame or None
-            DataFrame containing an "AdjClose" column indexed by date,
-            or None if data could not be retrieved.
+        pandas.DataFrame | None
+            DataFrame containing an "AdjClose" column indexed by date.
+            Returns None if data could not be retrieved.
         """
 
         # Attempt cache load
@@ -92,7 +94,12 @@ class Asset:
         self.cache_manager.save(self.df, self.ticker)
         return self.df
 
-    def print_asset_stats(self, start_date, end_date, frequency="D"):
+    def print_asset_stats(
+        self,
+        start_date: TimestampConvertibleTypes,
+        end_date: TimestampConvertibleTypes,
+        frequency: str = "D",
+    ) -> None:
         """
         Print summary statistics for the asset within a date range.
 
@@ -101,10 +108,12 @@ class Asset:
 
         Parameters
         ----------
-        start_date : str or datetime-like
-            Start date of the analysis period.
-        end_date : str or datetime-like
-            End date of the analysis period.
+        start_date : TimestampConvertibleTypes
+            Start date of the analysis period. Accepts any pandas-compatible
+            datetime input (e.g. str, datetime, date, Timestamp).
+        end_date : TimestampConvertibleTypes
+            End date of the analysis period. Accepts any pandas-compatible
+            datetime input (e.g. str, datetime, date, Timestamp).
         frequency : str, default "D"
             Resampling frequency (e.g., "D", "ME", "YE").
 
@@ -112,6 +121,10 @@ class Asset:
         -------
         None
         """
+
+        if self.df is None:
+            print(f"No data available for {self.label}. Call fetch() first.")
+            return
 
         prices = self.df["AdjClose"].loc[start_date:end_date].copy()
 
@@ -149,19 +162,16 @@ class Asset:
         ac_daily = prices.pct_change().dropna().autocorr(1)
         ac_monthly = prices.resample("ME").last().pct_change().dropna().autocorr(1)
         ac_yearly = prices.resample("YE").last().pct_change().dropna().autocorr(1)
-        auto_correlation = {
+
+        auto_correlation: dict[str, float] = {
             "daily": ac_daily,
             "monthly": ac_monthly,
             "yearly": ac_yearly,
         }
 
-        print(
-            "\n--------------------------------------------------------------------------------"
-        )
+        print("\n" + "-" * 80)
         print(f"Asset statistics: {self.label}")
-        print(
-            "--------------------------------------------------------------------------------"
-        )
+        print("-" * 80)
         print(f"Period: {prices.index[0].date()} - {prices.index[-1].date()}")
         print(f"Frequency: {frequency}")
         print(f"Observations: {len(prices)}")
@@ -175,21 +185,19 @@ class Asset:
         print(f"  Daily:   {auto_correlation['daily']:.4f}")
         print(f"  Monthly: {auto_correlation['monthly']:.4f}")
         print(f"  Yearly:  {auto_correlation['yearly']:.4f}")
-        print(
-            "--------------------------------------------------------------------------------"
-        )
+        print("-" * 80)
 
     def plot_asset_stats(
         self,
-        start_date,
-        end_date,
-        frequency="D",
-        log_price=False,
-        sharpe_window=63,
-        risk_free_rate=0.0,
-        figsize=(10, 10),
-        save_path=None,
-    ):
+        start_date: TimestampConvertibleTypes,
+        end_date: TimestampConvertibleTypes,
+        frequency: str = "D",
+        log_price: bool = False,
+        sharpe_window: int = 63,
+        risk_free_rate: float = 0.0,
+        figsize: tuple[float, float] = (10, 10),
+        save_path: str | None = None,
+    ) -> None:
         """
         Plot key performance metrics for the asset.
 
@@ -202,27 +210,33 @@ class Asset:
 
         Parameters
         ----------
-        start_date : str or datetime-like
-            Start date of the analysis period.
-        end_date : str or datetime-like
-            End date of the analysis period.
+        start_date : TimestampConvertibleTypes
+            Start date of the analysis period. Accepts any pandas-compatible
+            datetime input (e.g. str, datetime, date, Timestamp).
+        end_date : TimestampConvertibleTypes
+            End date of the analysis period. Accepts any pandas-compatible
+            datetime input (e.g. str, datetime, date, Timestamp).
         frequency : str, default "D"
             Resampling frequency.
         log_price : bool, default False
-            Whether to display the price axis on a logarithmic scale.
+            If True, uses logarithmic scale for price axis.
         sharpe_window : int, default 63
             Rolling window size for volatility and Sharpe ratio.
         risk_free_rate : float, default 0.0
-            Annualized risk-free rate used for Sharpe ratio calculation.
-        figsize : tuple, default (10, 10)
-            Figure size passed to matplotlib.
-        save_path : str or None, default None
-            If provided, save the plot to this path instead of displaying it.
+            Annualized risk-free rate used in Sharpe ratio calculation.
+        figsize : tuple[float, float], default (10, 10)
+            Figure size in inches as (width, height).
+        save_path : str | None, default None
+            If provided, saves the plot to this path; otherwise displays it.
 
         Returns
         -------
         None
         """
+
+        if self.df is None:
+            print(f"No data available for {self.label}. Call fetch() first.")
+            return
 
         prices = self.df["AdjClose"].loc[start_date:end_date].copy()
 
