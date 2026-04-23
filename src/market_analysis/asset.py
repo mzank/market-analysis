@@ -117,14 +117,18 @@ class Asset:
         frequency : str, default "D"
             Resampling frequency (e.g., "D", "ME", "YE").
 
+        Raises
+        ------
+        TypeError
+            If fetch() has not been called or no data is available.
+
         Returns
         -------
         None
         """
 
         if self.df is None:
-            print(f"No data available for {self.label}. Call fetch() first.")
-            return
+            raise TypeError(f"No data available for {self.label}. Call fetch() first.")
 
         prices = self.df["AdjClose"].loc[start_date:end_date].copy()
 
@@ -229,14 +233,18 @@ class Asset:
         save_path : str | None, default None
             If provided, saves the plot to this path; otherwise displays it.
 
+        Raises
+        ------
+        TypeError
+            If fetch() has not been called or no data is available.
+
         Returns
         -------
         None
         """
 
         if self.df is None:
-            print(f"No data available for {self.label}. Call fetch() first.")
-            return
+            raise TypeError(f"No data available for {self.label}. Call fetch() first.")
 
         prices = self.df["AdjClose"].loc[start_date:end_date].copy()
 
