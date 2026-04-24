@@ -21,7 +21,9 @@ class CacheManager:
     and maintaining schema version consistency for cached datasets.
     """
 
-    def __init__(self, cache_dir=CACHE_DIR, schema_version=SCHEMA_VERSION):
+    def __init__(
+        self, cache_dir: str = CACHE_DIR, schema_version: str = SCHEMA_VERSION
+    ) -> None:
         """
         Initialize the CacheManager.
 
@@ -37,7 +39,7 @@ class CacheManager:
         self.schema_version = schema_version
         os.makedirs(self.cache_dir, exist_ok=True)
 
-    def get_cache_path(self, ticker):
+    def get_cache_path(self, ticker: str) -> str:
         """
         Return the full cache file path for a ticker.
 
@@ -54,7 +56,7 @@ class CacheManager:
 
         return os.path.join(self.cache_dir, f"{ticker}.parquet")
 
-    def is_fresh(self, df):
+    def is_fresh(self, df: pd.DataFrame) -> bool:
         """
         Determine whether cached data is sufficiently recent.
 
@@ -64,12 +66,12 @@ class CacheManager:
         Parameters
         ----------
         df : pandas.DataFrame
-            Cached price data.
+            Cached price data indexed by date.
 
         Returns
         -------
         bool
-            True if data is fresh, otherwise False.
+            True if the data is considered fresh, otherwise False.
         """
 
         if df.empty:
@@ -81,9 +83,12 @@ class CacheManager:
         age = (ref_day - youngest_date).days
         return age <= CACHE_MAX_AGE
 
-    def load(self, ticker):
+    def load(self, ticker: str) -> pd.DataFrame | None:
         """
         Load cached data for a ticker if available and valid.
+
+        A cache entry is considered valid if the file exists, can be read,
+        and matches the expected schema version.
 
         Parameters
         ----------
@@ -92,8 +97,8 @@ class CacheManager:
 
         Returns
         -------
-        pandas.DataFrame or None
-            Cached DataFrame if valid, otherwise None.
+        pandas.DataFrame | None
+            Cached data if valid, otherwise None.
         """
 
         path = self.get_cache_path(ticker)
@@ -106,9 +111,12 @@ class CacheManager:
                 print(f"Cache corrupted for {ticker}, refetching.")
         return None
 
-    def save(self, df, ticker):
+    def save(self, df: pd.DataFrame, ticker: str) -> None:
         """
         Save price data to the cache.
+
+        The schema version is stored in the DataFrame metadata to ensure
+        compatibility with future versions.
 
         Parameters
         ----------
