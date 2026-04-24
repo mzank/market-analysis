@@ -11,7 +11,7 @@ from datetime import datetime
 from .datafetcher import DataFetcher
 
 
-def main():
+def main() -> None:
     """
     Execute the command-line interface.
 
