@@ -260,10 +260,10 @@ The documentation is automatically built and deployed to GitHub Pages on every p
 
 ## Development
 
-The project includes configuration for:
+All development tools are configured within `pyproject.toml`. The project includes configuration for:
 - black
 - isort
-- flake8
+- flake8 (via `flake8-pyproject`)
 - pylint
 - mypy
 - pytest
