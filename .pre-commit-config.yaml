@@ -29,5 +29,4 @@ repos:
       - id: mypy
         additional_dependencies:
           - pandas-stubs
-          - types-matplotlib
           - types-setuptools
