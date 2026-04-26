@@ -28,6 +28,7 @@ dev = [
     "isort",
     "flake8",
     "flake8-pyproject",
+    "pre-commit",
     "pylint",
     "mypy",
     "pytest",
@@ -47,6 +48,10 @@ addopts = "-ra -q"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+market_analysis = ["py.typed"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
