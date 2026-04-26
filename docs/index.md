@@ -6,6 +6,7 @@ Welcome to the documentation for **market-analysis**, a financial asset analysis
 :maxdepth: 2
 :caption: Contents:
 
+functionality
 apidocs/index
 ```
 
