@@ -27,7 +27,7 @@ The toolkit uses a "Fetch-Through" cache strategy managed by the `CacheManager`:
 The `Asset` class computes several critical financial metrics:
 
 - **Returns**: Logarithmic and simple returns for various frequencies (Daily, Monthly, Yearly).
-- **Risk Metrics**: 
+- **Risk Metrics**:
   - **Volatility**: Annualized standard deviation of returns.
   - **Maximum Drawdown**: The peak-to-trough decline during a specific period.
   - **Rolling Metrics**: Rolling volatility and Sharpe ratio (default 63-day window) to visualize risk evolution over time.
