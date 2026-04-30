@@ -15,8 +15,10 @@ Cache Settings:
 | MAX_WORKERS      | 6                 | Maximum number of parallel threads for fetching data. |
 """
 
+from typing import Literal
+
 CACHE_DIR = "cache_history"
 CACHE_MAX_AGE = 1
 SCHEMA_VERSION = "1.0"
-PARQUET_ENGINE = "pyarrow"
+PARQUET_ENGINE: Literal["auto", "pyarrow", "fastparquet"] = "pyarrow"
 MAX_WORKERS = 6
