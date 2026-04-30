@@ -16,7 +16,9 @@ from market_analysis import cli
 
 
 @pytest.fixture
-def mock_datafetcher(monkeypatch):
+def mock_datafetcher(
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[MagicMock, MagicMock, MagicMock]:
     """
     Provide a mocked DataFetcher and asset instance.
 
@@ -42,7 +44,10 @@ def mock_datafetcher(monkeypatch):
     return mock_fetcher_class, mock_fetcher_instance, mock_asset
 
 
-def test_cli_execution_with_required_arguments(monkeypatch, mock_datafetcher):
+def test_cli_execution_with_required_arguments(
+    monkeypatch: pytest.MonkeyPatch,
+    mock_datafetcher: tuple[MagicMock, MagicMock, MagicMock],
+) -> None:
     """
     Verify CLI execution with required arguments.
 
@@ -90,7 +95,10 @@ def test_cli_execution_with_required_arguments(monkeypatch, mock_datafetcher):
     )
 
 
-def test_cli_default_end_date(monkeypatch, mock_datafetcher):
+def test_cli_default_end_date(
+    monkeypatch: pytest.MonkeyPatch,
+    mock_datafetcher: tuple[MagicMock, MagicMock, MagicMock],
+) -> None:
     """
     Verify CLI uses default end date when not explicitly provided.
     """
@@ -122,7 +130,7 @@ def test_cli_default_end_date(monkeypatch, mock_datafetcher):
     assert kwargs["risk_free_rate"] == 0.02
 
 
-def test_cli_requires_tickers(monkeypatch):
+def test_cli_requires_tickers(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     Verify CLI exits when required arguments are missing.
     """
