@@ -17,7 +17,9 @@ Tests ensure the correctness of outputs, proper cache usage, and that
 plotting functions execute without errors.
 """
 
-from unittest.mock import Mock
+from collections.abc import Callable
+from typing import Any
+from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 import pytest
@@ -46,9 +48,9 @@ def increasing_prices() -> pd.DataFrame:
 
 
 @pytest.fixture
-def mock_cache_manager():
+def mock_cache_manager() -> MagicMock:
     """Mocked cache manager with explicit spec-like safety."""
-    cm = Mock()
+    cm = MagicMock()
     cm.load.return_value = None
     cm.is_fresh.return_value = True
     cm.save.return_value = None
@@ -56,11 +58,11 @@ def mock_cache_manager():
 
 
 @pytest.fixture
-def asset_factory(mock_cache_manager):
+def asset_factory(mock_cache_manager: Mock) -> Callable[[pd.DataFrame | None], Asset]:
     """Factory to create Asset instances optionally preloaded with df."""
 
-    def _create(df=None):
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+    def _create(df: pd.DataFrame | None = None) -> Asset:
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         if df is not None:
             asset.df = df
         return asset
@@ -69,7 +71,7 @@ def asset_factory(mock_cache_manager):
 
 
 @pytest.fixture(autouse=True)
-def use_agg_backend():
+def use_agg_backend() -> None:
     """Force non-interactive matplotlib backend."""
     import matplotlib
 
@@ -84,10 +86,14 @@ def use_agg_backend():
 class TestFetch:
     @pytest.mark.parametrize("columns", [["Adj Close"], ["Close"]])
     def test_fetch_column_selection_and_timezone(
-        self, monkeypatch, mock_cache_manager, sample_prices, columns
-    ):
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_cache_manager: MagicMock,
+        sample_prices: pd.DataFrame,
+        columns: list[str],
+    ) -> None:
         df = sample_prices.copy()
-        df.columns = columns
+        df.columns = pd.Index(columns)
 
         df.index = df.index.tz_localize("UTC").tz_convert("Europe/Vienna")
 
@@ -99,9 +105,10 @@ class TestFetch:
             lambda ticker: mock_ticker,
         )
 
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         result = asset.fetch()
 
+        assert result is not None
         assert list(result.columns) == ["AdjClose"]
         assert result.index.tz is None
         assert all(result.index.hour == 0)
@@ -110,11 +117,13 @@ class TestFetch:
         mock_cache_manager.load.assert_called_once_with("TEST")
         mock_cache_manager.save.assert_called_once()
 
-    def test_fetch_from_cache(self, mock_cache_manager, sample_prices):
+    def test_fetch_from_cache(
+        self, mock_cache_manager: MagicMock, sample_prices: pd.DataFrame
+    ) -> None:
         mock_cache_manager.load.return_value = sample_prices
         mock_cache_manager.is_fresh.return_value = True
 
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         df = asset.fetch()
 
         pd.testing.assert_frame_equal(df, sample_prices)
@@ -123,13 +132,16 @@ class TestFetch:
         mock_cache_manager.save.assert_not_called()
 
     def test_fetch_stale_cache_downloads(
-        self, monkeypatch, mock_cache_manager, sample_prices
-    ):
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_cache_manager: MagicMock,
+        sample_prices: pd.DataFrame,
+    ) -> None:
         mock_cache_manager.load.return_value = sample_prices
         mock_cache_manager.is_fresh.return_value = False
 
         mock_hist = sample_prices.copy()
-        mock_hist.columns = ["Adj Close"]
+        mock_hist.columns = pd.Index(["Adj Close"])
 
         mock_ticker = Mock()
         mock_ticker.history.return_value = mock_hist
@@ -139,13 +151,15 @@ class TestFetch:
             lambda ticker: mock_ticker,
         )
 
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         df = asset.fetch()
 
         assert isinstance(df, pd.DataFrame)
         mock_cache_manager.save.assert_called_once()
 
-    def test_fetch_empty_dataframe(self, monkeypatch, mock_cache_manager):
+    def test_fetch_empty_dataframe(
+        self, monkeypatch: pytest.MonkeyPatch, mock_cache_manager: MagicMock
+    ) -> None:
         mock_ticker = Mock()
         mock_ticker.history.return_value = pd.DataFrame()
 
@@ -154,10 +168,12 @@ class TestFetch:
             lambda ticker: mock_ticker,
         )
 
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         assert asset.fetch() is None
 
-    def test_fetch_no_price_columns(self, monkeypatch, mock_cache_manager):
+    def test_fetch_no_price_columns(
+        self, monkeypatch: pytest.MonkeyPatch, mock_cache_manager: MagicMock
+    ) -> None:
         df = pd.DataFrame({"Open": [1, 2, 3]})
         mock_ticker = Mock()
         mock_ticker.history.return_value = df
@@ -167,7 +183,7 @@ class TestFetch:
             lambda ticker: mock_ticker,
         )
 
-        asset = Asset("TEST", "Test Asset", mock_cache_manager)
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         assert asset.fetch() is None
 
 
@@ -177,7 +193,12 @@ class TestFetch:
 
 
 class TestPrintStats:
-    def test_total_return_exact(self, asset_factory, capsys, sample_prices):
+    def test_total_return_exact(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+        sample_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(sample_prices)
         asset.print_asset_stats("2020-01-01", "2020-01-05")
 
@@ -186,14 +207,23 @@ class TestPrintStats:
 
         assert "Total return: 10.00%" in out
 
-    def test_zero_drawdown(self, asset_factory, capsys, increasing_prices):
+    def test_zero_drawdown(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+        increasing_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(increasing_prices)
         asset.print_asset_stats("2020-01-01", "2020-01-04")
 
         out = capsys.readouterr().out
         assert "Max drawdown: 0.00%" in out
 
-    def test_insufficient_data(self, asset_factory, capsys):
+    def test_insufficient_data(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
         df = pd.DataFrame(
             {"AdjClose": [100]},
             index=pd.to_datetime(["2020-01-01"]),
@@ -203,13 +233,19 @@ class TestPrintStats:
 
         assert "insufficient data" in capsys.readouterr().out
 
-    def test_df_none_raises(self):
-        asset = Asset("T", "Test", Mock())
+    def test_df_none_raises(self) -> None:
+        asset = Asset("T", "Test", Mock())  # type: ignore
         with pytest.raises(TypeError):
             asset.print_asset_stats("2020-01-01", "2020-01-05")
 
     @pytest.mark.parametrize("frequency", ["D", "ME", "YE"])
-    def test_frequency_display(self, asset_factory, capsys, sample_prices, frequency):
+    def test_frequency_display(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+        sample_prices: pd.DataFrame,
+        frequency: str,
+    ) -> None:
         asset = asset_factory(sample_prices)
         asset.print_asset_stats("2020-01-01", "2020-01-05", frequency=frequency)
 
@@ -222,7 +258,12 @@ class TestPrintStats:
 
 
 class TestPlotStats:
-    def test_plot_creates_five_axes(self, asset_factory, monkeypatch, sample_prices):
+    def test_plot_creates_five_axes(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        monkeypatch: pytest.MonkeyPatch,
+        sample_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(sample_prices)
 
         fig_mock = Mock()
@@ -240,7 +281,12 @@ class TestPlotStats:
 
         assert len(axes_mock) == 5
 
-    def test_log_price_sets_log_scale(self, asset_factory, monkeypatch, sample_prices):
+    def test_log_price_sets_log_scale(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        monkeypatch: pytest.MonkeyPatch,
+        sample_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(sample_prices)
 
         fig_mock = Mock()
@@ -261,7 +307,12 @@ class TestPlotStats:
 
         axes_mock[0].set_yscale.assert_called_once_with("log")
 
-    def test_show_called_when_no_save(self, asset_factory, monkeypatch, sample_prices):
+    def test_show_called_when_no_save(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        monkeypatch: pytest.MonkeyPatch,
+        sample_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(sample_prices)
 
         monkeypatch.setattr("matplotlib.pyplot.close", Mock())
@@ -273,8 +324,12 @@ class TestPlotStats:
         show_mock.assert_called_once()
 
     def test_save_called_and_show_not_called(
-        self, asset_factory, monkeypatch, tmp_path, sample_prices
-    ):
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Any,
+        sample_prices: pd.DataFrame,
+    ) -> None:
         asset = asset_factory(sample_prices)
 
         save_mock = Mock()
@@ -299,7 +354,9 @@ class TestPlotStats:
         save_mock.assert_called_once()
         show_mock.assert_not_called()
 
-    def test_plot_insufficient_data(self, asset_factory):
+    def test_plot_insufficient_data(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
         df = pd.DataFrame(
             {"AdjClose": [100]},
             index=pd.to_datetime(["2020-01-01"]),
@@ -308,20 +365,23 @@ class TestPlotStats:
 
         asset.plot_asset_stats("2020-01-01", "2020-01-01")
 
-    def test_plot_df_none_raises(self):
-        asset = Asset("T", "Test", Mock())
+    def test_plot_df_none_raises(self) -> None:
+        asset = Asset("T", "Test", Mock())  # type: ignore
         with pytest.raises(TypeError):
             asset.plot_asset_stats("2020-01-01", "2020-01-05")
 
-    def test_plot_non_daily_branch_executes(self, sample_prices):
+    def test_plot_non_daily_branch_executes(self, sample_prices: pd.DataFrame) -> None:
         from unittest.mock import Mock
 
         import matplotlib.pyplot as plt
 
-        asset = Asset("TEST", "Test Asset", Mock())
+        asset = Asset("TEST", "Test Asset", Mock())  # type: ignore
         asset.df = sample_prices
 
-        plt.show = lambda: None
+        def mock_show() -> None:
+            pass
+
+        plt.show = mock_show
 
         asset.plot_asset_stats(
             "2020-01-01",
