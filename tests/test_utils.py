@@ -13,40 +13,40 @@ import pytest
 from market_analysis.utils import safe_filename
 
 
-def test_removes_special_characters():
+def test_removes_special_characters() -> None:
     assert safe_filename('file<>:"/\\|?*name') == "filename"
 
 
-def test_removes_invalid_characters():
+def test_removes_invalid_characters() -> None:
     assert safe_filename("file@#$%^&name") == "filename"
 
 
-def test_replaces_spaces_with_underscores():
+def test_replaces_spaces_with_underscores() -> None:
     assert safe_filename("my file name") == "my_file_name"
 
 
-def test_collapses_multiple_underscores():
+def test_collapses_multiple_underscores() -> None:
     assert safe_filename("my   file   name") == "my_file_name"
 
 
-def test_trims_leading_and_trailing_spaces():
+def test_trims_leading_and_trailing_spaces() -> None:
     assert safe_filename("   myfile   ") == "myfile"
 
 
-def test_trims_leading_and_trailing_underscores_and_dots():
+def test_trims_leading_and_trailing_underscores_and_dots() -> None:
     assert safe_filename("__myfile__.") == "myfile"
 
 
-def test_preserves_valid_characters():
+def test_preserves_valid_characters() -> None:
     assert safe_filename("file_name-1.0.txt") == "file_name-1.0.txt"
 
 
-def test_unicode_normalization():
+def test_unicode_normalization() -> None:
     # ü → u, é → e
     assert safe_filename("für élise.txt") == "fur_elise.txt"
 
 
-def test_empty_string():
+def test_empty_string() -> None:
     assert safe_filename("") == ""
 
 
@@ -60,5 +60,5 @@ def test_empty_string():
         ("file___name", "file_name"),
     ],
 )
-def test_various_cases(input_string, expected):
+def test_various_cases(input_string: str, expected: str) -> None:
     assert safe_filename(input_string) == expected

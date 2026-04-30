@@ -20,7 +20,7 @@ from market_analysis.datafetcher import DataFetcher
 
 
 @pytest.fixture
-def ticker_config():
+def ticker_config() -> dict[str, dict[str, str]]:
     return {
         "AAA": {"label": "Asset A"},
         "BBB": {"label": "Asset B"},
@@ -28,7 +28,9 @@ def ticker_config():
     }
 
 
-def test_load_assets_successful_fetches(ticker_config):
+def test_load_assets_successful_fetches(
+    ticker_config: dict[str, dict[str, str]],
+) -> None:
     """All assets return data and should be included in results."""
 
     with (
@@ -53,7 +55,10 @@ def test_load_assets_successful_fetches(ticker_config):
         MockExecutor.return_value.__enter__.return_value = mock_executor
 
         # futures for submit(): each future.result() yields "dataframe"
-        mock_futures = [MagicMock(result=lambda: "dataframe") for _ in ticker_config]
+        def mock_result() -> str:
+            return "dataframe"
+
+        mock_futures = [MagicMock(result=mock_result) for _ in ticker_config]
         mock_executor.submit.side_effect = mock_futures
 
         # DataFetcher run
@@ -67,7 +72,7 @@ def test_load_assets_successful_fetches(ticker_config):
         assert mock_executor.submit.call_count == 3
 
 
-def test_load_assets_partial_failure(ticker_config):
+def test_load_assets_partial_failure(ticker_config: dict[str, dict[str, str]]) -> None:
     """Assets returning None should not appear in results."""
 
     with (
@@ -89,10 +94,13 @@ def test_load_assets_partial_failure(ticker_config):
         mock_executor = MagicMock()
         MockExecutor.return_value.__enter__.return_value = mock_executor
 
-        mock_futures = [
-            MagicMock(result=lambda i=i: "dataframe" if i < 2 else None)
-            for i in range(len(ticker_config))
-        ]
+        def get_mock_future(i: int) -> MagicMock:
+            def mock_result() -> str | None:
+                return "dataframe" if i < 2 else None
+
+            return MagicMock(result=mock_result)
+
+        mock_futures = [get_mock_future(i) for i in range(len(ticker_config))]
         mock_executor.submit.side_effect = mock_futures
 
         fetcher = DataFetcher(ticker_config)
@@ -103,7 +111,9 @@ def test_load_assets_partial_failure(ticker_config):
         assert len(result) == 2
 
 
-def test_max_workers_passed_to_executor(ticker_config):
+def test_max_workers_passed_to_executor(
+    ticker_config: dict[str, dict[str, str]],
+) -> None:
     """Ensure max_workers is passed to ThreadPoolExecutor."""
 
     with (
@@ -125,7 +135,7 @@ def test_max_workers_passed_to_executor(ticker_config):
         MockExecutor.assert_called_once_with(max_workers=5)
 
 
-def test_empty_ticker_config():
+def test_empty_ticker_config() -> None:
     """Empty ticker config should return empty dict."""
 
     with (

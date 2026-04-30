@@ -19,6 +19,7 @@ avoid side effects between test runs.
 
 import os
 from datetime import timedelta
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -27,13 +28,13 @@ from market_analysis.cachemanager import CacheManager
 
 
 @pytest.fixture
-def cache_manager(tmp_path):
+def cache_manager(tmp_path: Path) -> CacheManager:
     """Provide CacheManager with isolated temporary directory."""
-    return CacheManager(cache_dir=tmp_path, schema_version="test_schema")
+    return CacheManager(cache_dir=str(tmp_path), schema_version="test_schema")
 
 
 @pytest.fixture
-def sample_df():
+def sample_df() -> pd.DataFrame:
     """Create a simple DataFrame with recent business-day index."""
     today = pd.Timestamp.now().normalize()
     index = pd.bdate_range(start=today - pd.tseries.offsets.BDay(4), periods=5)
@@ -41,18 +42,20 @@ def sample_df():
     return df
 
 
-def test_get_cache_path(cache_manager):
+def test_get_cache_path(cache_manager: CacheManager) -> None:
     ticker = "TEST"
     path = cache_manager.get_cache_path(ticker)
 
     assert str(path).endswith(os.path.join(cache_manager.cache_dir, "TEST.parquet"))
 
 
-def test_is_fresh_with_recent_data(cache_manager, sample_df):
+def test_is_fresh_with_recent_data(
+    cache_manager: CacheManager, sample_df: pd.DataFrame
+) -> None:
     assert cache_manager.is_fresh(sample_df) is True
 
 
-def test_is_fresh_with_old_data(cache_manager):
+def test_is_fresh_with_old_data(cache_manager: CacheManager) -> None:
     old_date = pd.Timestamp.now().normalize() - timedelta(days=365)
     index = pd.bdate_range(start=old_date - pd.tseries.offsets.BDay(4), periods=5)
     df = pd.DataFrame({"Close": range(5)}, index=index)
@@ -60,12 +63,14 @@ def test_is_fresh_with_old_data(cache_manager):
     assert cache_manager.is_fresh(df) is False
 
 
-def test_is_fresh_empty_dataframe(cache_manager):
+def test_is_fresh_empty_dataframe(cache_manager: CacheManager) -> None:
     df = pd.DataFrame()
     assert cache_manager.is_fresh(df) is False
 
 
-def test_save_and_load_valid_schema(cache_manager, sample_df):
+def test_save_and_load_valid_schema(
+    cache_manager: CacheManager, sample_df: pd.DataFrame
+) -> None:
     ticker = "VALID"
 
     cache_manager.save(sample_df, ticker)
@@ -76,7 +81,9 @@ def test_save_and_load_valid_schema(cache_manager, sample_df):
     assert loaded.attrs.get("schema_version") == "test_schema"
 
 
-def test_load_returns_none_for_wrong_schema(cache_manager, sample_df):
+def test_load_returns_none_for_wrong_schema(
+    cache_manager: CacheManager, sample_df: pd.DataFrame
+) -> None:
     ticker = "WRONG_SCHEMA"
 
     # Save with different schema version
@@ -90,11 +97,11 @@ def test_load_returns_none_for_wrong_schema(cache_manager, sample_df):
     assert loaded is None
 
 
-def test_load_returns_none_if_file_missing(cache_manager):
+def test_load_returns_none_if_file_missing(cache_manager: CacheManager) -> None:
     assert cache_manager.load("DOES_NOT_EXIST") is None
 
 
-def test_load_handles_corrupted_file(cache_manager):
+def test_load_handles_corrupted_file(cache_manager: CacheManager) -> None:
     ticker = "CORRUPTED"
     path = cache_manager.get_cache_path(ticker)
 
