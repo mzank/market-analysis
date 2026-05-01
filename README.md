@@ -198,6 +198,12 @@ The visualization includes the following panels. Plots can be displayed or saved
 ```text
 market-analysis/
 │
+├── .github/
+│   └── workflows/
+│       ├── docs.yml
+│       ├── pre-commit.yml
+│       └── tests.yml
+│
 ├── docs/
 │   ├── conf.py
 │   └── index.md
@@ -252,10 +258,6 @@ sphinx-build -b html docs docs/_build/html
 
 The generated HTML files will be available in the `docs/_build/html/` directory.
 
-### Automated Deployment
-
-The documentation is automatically built and deployed to GitHub Pages on every push to the `main` branch via GitHub Actions.
-
 ---
 
 ## Development
@@ -268,9 +270,20 @@ All development tools are configured within `pyproject.toml`. The project includ
 - mypy
 - pytest
 
+### Git Hooks
+
+The project uses `pre-commit` to ensure code quality. To install the hooks:
+
+```bash
+pip install -e .[dev]
+pre-commit install
+```
+
+Once installed, the hooks will run automatically on every commit.
+
 ### Formatting
 
-Run formatting:
+Run formatting manually:
 ```bash
 black .
 isort .
@@ -278,7 +291,7 @@ isort .
 
 ### Static Analysis
 
-Run static checks:
+Run static checks manually:
 ```bash
 flake8
 pylint src/
@@ -289,11 +302,6 @@ mypy src/
 
 The project uses `pytest` for automated testing.
 
-Install development dependencies:
-```bash
-pip install -e .[dev]
-```
-
 Run tests:
 ```bash
 pytest
@@ -303,6 +311,15 @@ Run with coverage:
 ```bash
 pytest --cov=market_analysis --cov-report=term-missing
 ```
+
+### Continuous Integration (CI)
+
+On every push and pull request to the `main` branch, the following checks are performed automatically:
+1. **Pre-commit:** All formatting, linting, and typing checks.
+2. **Tests:** All unit tests are executed across supported environments.
+3. **Docs:** The documentation is built and validated.
+
+On pushes to `main`, the documentation is also automatically deployed to GitHub Pages.
 
 ---
 
