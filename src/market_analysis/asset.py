@@ -75,9 +75,9 @@ class Asset:
 
         # Prefer Adjusted Close
         if "Adj Close" in hist.columns:
-            self.df = hist[["Adj Close"]].rename(columns={"Adj Close": "AdjClose"})
+            df = hist[["Adj Close"]].rename(columns={"Adj Close": "AdjClose"})
         elif "Close" in hist.columns:
-            self.df = hist[["Close"]].rename(columns={"Close": "AdjClose"})
+            df = hist[["Close"]].rename(columns={"Close": "AdjClose"})
         else:
             print(f"No usable price column for {self.ticker}")
             return None
@@ -89,9 +89,10 @@ class Asset:
             idx = idx.tz_convert("UTC").tz_localize(None)
         idx = idx.normalize()
 
-        self.df.index = idx
+        df.index = idx
+        self.df = df
 
-        self.cache_manager.save(self.df, self.ticker)
+        self.cache_manager.save(df, self.ticker)
         return self.df
 
     def print_asset_stats(
@@ -130,7 +131,10 @@ class Asset:
         if self.df is None:
             raise TypeError(f"No data available for {self.label}. Call fetch() first.")
 
-        prices = self.df["AdjClose"].loc[start_date:end_date].copy()
+        start = pd.Timestamp(start_date)
+        end = pd.Timestamp(end_date)
+
+        prices = self.df["AdjClose"].loc[start:end].copy()
 
         if prices.empty or len(prices) < 2:
             print(
@@ -246,7 +250,10 @@ class Asset:
         if self.df is None:
             raise TypeError(f"No data available for {self.label}. Call fetch() first.")
 
-        prices = self.df["AdjClose"].loc[start_date:end_date].copy()
+        start = pd.Timestamp(start_date)
+        end = pd.Timestamp(end_date)
+
+        prices = self.df["AdjClose"].loc[start:end].copy()
 
         if prices.empty or len(prices) < 2:
             print(f"{self.label}: insufficient data to plot.")

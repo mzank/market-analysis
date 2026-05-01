@@ -18,7 +18,7 @@ plotting functions execute without errors.
 """
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock, Mock
 
 import pandas as pd
@@ -95,7 +95,11 @@ class TestFetch:
         df = sample_prices.copy()
         df.columns = pd.Index(columns)
 
-        df.index = df.index.tz_localize("UTC").tz_convert("Europe/Vienna")
+        df.index = (
+            cast(pd.DatetimeIndex, df.index)
+            .tz_localize("UTC")
+            .tz_convert("Europe/Vienna")
+        )
 
         mock_ticker = Mock()
         mock_ticker.history.return_value = df
@@ -110,9 +114,11 @@ class TestFetch:
 
         assert result is not None
         assert list(result.columns) == ["AdjClose"]
-        assert result.index.tz is None
-        assert all(result.index.hour == 0)
-        assert result.index.equals(pd.to_datetime(result.index.date))
+
+        res_idx = cast(pd.DatetimeIndex, result.index)
+        assert res_idx.tz is None
+        assert all(res_idx.hour == 0)
+        assert res_idx.equals(pd.to_datetime(list(res_idx.date)))
 
         mock_cache_manager.load.assert_called_once_with("TEST")
         mock_cache_manager.save.assert_called_once()
@@ -126,6 +132,7 @@ class TestFetch:
         asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
         df = asset.fetch()
 
+        assert df is not None
         pd.testing.assert_frame_equal(df, sample_prices)
         mock_cache_manager.load.assert_called_once_with("TEST")
         mock_cache_manager.is_fresh.assert_called_once_with(sample_prices)
