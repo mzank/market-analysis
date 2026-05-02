@@ -298,6 +298,11 @@ pylint src/
 mypy src/
 ```
 
+To run all formatting, linting, and typing checks at once:
+```bash
+pre-commit run --all-files
+```
+
 ### Testing
 
 The project uses `pytest` for automated testing.
