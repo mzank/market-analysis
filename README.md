@@ -13,6 +13,23 @@ Financial asset analysis and correlation toolkit for Python.
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Caching](#caching)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Command Line Usage (CLI)](#command-line-usage-cli)
+- [Python API Example](#python-api-example)
+- [Frequency Parameter](#frequency-parameter)
+- [Generated Plots](#generated-plots)
+- [Project Structure](#project-structure)
+- [Documentation](#documentation)
+- [Development](#development)
+- [License](#license)
+
+---
+
 ## Features
 
 - Download historical data via Yahoo Finance (`yfinance`)
