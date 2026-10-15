@@ -258,6 +258,26 @@ class TestPrintStats:
 
         assert f"Frequency: {frequency}" in capsys.readouterr().out
 
+    def test_autocorrelation_nan(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+
+        asset.print_asset_stats(
+            "2020-01-01",
+            "2020-01-05",
+            frequency="YE",
+        )
+
+        out = capsys.readouterr().out
+
+        assert "Daily:" in out
+        assert "Monthly:" in out
+        assert "Yearly:  nan" in out
+
 
 # ---------------------------------------------------------------------
 # Plot Tests
