@@ -167,9 +167,15 @@ class Asset:
         max_dd = drawdown.min()
 
         # Autocorrelation
-        ac_daily = prices.pct_change().dropna().autocorr(1)
-        ac_monthly = prices.resample("ME").last().pct_change().dropna().autocorr(1)
-        ac_yearly = prices.resample("YE").last().pct_change().dropna().autocorr(1)
+        daily_returns = prices.pct_change().dropna()
+        monthly_returns = prices.resample("ME").last().pct_change().dropna()
+        yearly_returns = prices.resample("YE").last().pct_change().dropna()
+
+        ac_daily = daily_returns.autocorr(1) if len(daily_returns) >= 3 else np.nan
+        ac_monthly = (
+            monthly_returns.autocorr(1) if len(monthly_returns) >= 3 else np.nan
+        )
+        ac_yearly = yearly_returns.autocorr(1) if len(yearly_returns) >= 3 else np.nan
 
         auto_correlation: dict[str, float] = {
             "daily": ac_daily,
