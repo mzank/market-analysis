@@ -84,9 +84,9 @@ class Asset:
 
         idx = pd.to_datetime(hist.index)
 
-        # Normalize all assets to UTC and make tz-naive
+        # Preserve the original exchange dates and remove timezone information
         if idx.tz is not None:
-            idx = idx.tz_convert("UTC").tz_localize(None)
+            idx = idx.tz_localize(None)
         idx = idx.normalize()
 
         df.index = idx
