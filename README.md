@@ -134,7 +134,7 @@ market-analysis --tickers "^GSPC" "BTC-USD" "GC=F" --start 2015-01-01
 For each successfully loaded asset the CLI:
 
 - prints the summary statistics at monthly frequency (`"ME"`), and
-- saves a five-panel chart based on daily data to `Stats_<ticker>.pdf` (for example `Stats_^GSPC.pdf`) in the current working directory.
+- saves a five-panel chart based on daily data to `Stats_<ticker>.pdf` (for example `Stats_GSPC.pdf` for `^GSPC`) in the current working directory.
 
 The saved chart uses a logarithmic price scale, a 126-period rolling window, and a 2% annual risk-free rate. These settings are fixed; use the Python API below to customize frequency, scaling, and rolling parameters.
 
