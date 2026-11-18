@@ -474,6 +474,9 @@ class TestCalculationMethods:
         prices = pd.Series([100.0, 121.0], index=dates)
 
         assert asset.calculate_cagr(prices) == pytest.approx(0.21, abs=1e-3)
+        assert asset.calculate_cagr(prices, total_return=0.21) == pytest.approx(
+            0.21, abs=1e-3
+        )
 
     def test_cagr_zero_time_span_is_nan(
         self, asset_factory: Callable[[pd.DataFrame | None], Asset]

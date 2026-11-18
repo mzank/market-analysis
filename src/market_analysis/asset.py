@@ -176,7 +176,9 @@ class Asset:
 
         return float(prices.iloc[-1] / prices.iloc[0] - 1)
 
-    def calculate_cagr(self, prices: pd.Series) -> float:
+    def calculate_cagr(
+        self, prices: pd.Series, total_return: float | None = None
+    ) -> float:
         """
         Calculate the compound annual growth rate of a price series.
 
@@ -184,6 +186,8 @@ class Asset:
         ----------
         prices : pandas.Series
             Price series.
+        total_return : float | None, default None
+            Precomputed total return; calculated from prices when omitted.
 
         Returns
         -------
@@ -191,7 +195,9 @@ class Asset:
             Annualized growth rate, or NaN for a zero/negative time span.
         """
 
-        total_return = self.calculate_total_return(prices)
+        if total_return is None:
+            total_return = self.calculate_total_return(prices)
+
         start = pd.Timestamp(prices.index[0])
         end = pd.Timestamp(prices.index[-1])
         n_years = (end - start).days / 365.25
@@ -431,7 +437,7 @@ class Asset:
         start_price = prices.iloc[0]
         end_price = prices.iloc[-1]
         total_return = self.calculate_total_return(prices)
-        cagr = self.calculate_cagr(prices)
+        cagr = self.calculate_cagr(prices, total_return)
         vol_annualized = self.calculate_volatility(prices, frequency)
         max_dd = self.calculate_max_drawdown(prices)
         auto_correlation = self.calculate_autocorrelations(prices)
