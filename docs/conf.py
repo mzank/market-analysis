@@ -14,7 +14,6 @@ except PackageNotFoundError:  # building docs from an uninstalled source checkou
 extensions = [
     "autodoc2",
     "myst_parser",
-    "sphinx_rtd_theme",
 ]
 
 exclude_patterns = ["_build"]
@@ -26,9 +25,6 @@ autodoc2_packages = [
 ]
 autodoc2_render_plugin = "myst"
 autodoc2_output_dir = "apidocs"
-
-autodoc_typehints = "description"
-autodoc_typehints_format = "short"
 
 nitpick_ignore = [
     ("py:class", "pandas.DataFrame"),
