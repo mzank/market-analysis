@@ -8,6 +8,9 @@ market_analysis.asset. It covers functionality for:
   normalization, and column selection.
 - Computing and printing asset statistics, including total return,
   CAGR, volatility, drawdown, and autocorrelation.
+- Directly testing the price preparation and calculation methods for
+  returns, CAGR, volatility, drawdowns, autocorrelations, and rolling
+  metrics.
 - Plotting asset statistics, including price, cumulative return,
   drawdown, rolling volatility, and rolling Sharpe ratio.
 
