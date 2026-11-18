@@ -127,6 +127,36 @@ class TestFetch:
         mock_cache_manager.load.assert_called_once_with("TEST")
         mock_cache_manager.save.assert_called_once()
 
+    def test_fetch_preserves_exchange_local_dates(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        mock_cache_manager: MagicMock,
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        df = sample_prices.copy()
+        df.columns = pd.Index(["Adj Close"])
+        df.index = cast(pd.DatetimeIndex, df.index).tz_localize("Europe/Vienna")
+
+        mock_ticker = Mock()
+        mock_ticker.history.return_value = df
+
+        monkeypatch.setattr(
+            "market_analysis.asset.yf.Ticker",
+            lambda ticker: mock_ticker,
+        )
+
+        asset = Asset("TEST", "Test Asset", mock_cache_manager)  # type: ignore
+        result = asset.fetch()
+
+        assert result is not None
+        assert list(result.index.strftime("%Y-%m-%d")) == [
+            "2020-01-01",
+            "2020-01-02",
+            "2020-01-03",
+            "2020-01-04",
+            "2020-01-05",
+        ]
+
     def test_fetch_from_cache(
         self, mock_cache_manager: MagicMock, sample_prices: pd.DataFrame
     ) -> None:
