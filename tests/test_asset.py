@@ -21,6 +21,7 @@ from collections.abc import Callable
 from typing import Any, cast
 from unittest.mock import MagicMock, Mock
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -408,7 +409,7 @@ class TestPlotStats:
         def mock_show() -> None:
             pass
 
-        plt.show = mock_show
+        plt.show = mock_show  # type: ignore[assignment]
 
         asset.plot_asset_stats(
             "2020-01-01",
@@ -417,3 +418,187 @@ class TestPlotStats:
             sharpe_window=2,
             risk_free_rate=0.01,
         )
+
+
+# ---------------------------------------------------------------------
+# Calculation Method Tests
+# ---------------------------------------------------------------------
+
+
+class TestCalculationMethods:
+    def test_prepare_prices(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+
+        prices = asset._prepare_prices("2020-01-01", "2020-01-05", "D")
+
+        assert prices is not None
+        pd.testing.assert_series_equal(
+            prices, sample_prices["AdjClose"], check_freq=False
+        )
+
+        resampled = asset._prepare_prices("2020-01-01", "2020-01-05", "ME")
+        assert resampled is not None
+        assert len(resampled) == 1
+        assert resampled.iloc[0] == pytest.approx(110.0)
+
+    def test_prepare_prices_insufficient_and_missing_data(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        df = pd.DataFrame({"AdjClose": [100.0]}, index=pd.to_datetime(["2020-01-01"]))
+        asset = asset_factory(df)
+        assert asset._prepare_prices("2020-01-01", "2020-01-01", "D") is None
+
+        asset = asset_factory(None)
+        with pytest.raises(TypeError):
+            asset._prepare_prices("2020-01-01", "2020-01-05", "D")
+
+    def test_total_return(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+
+        assert asset.calculate_total_return(sample_prices["AdjClose"]) == pytest.approx(
+            0.10
+        )
+
+    def test_cagr(self, asset_factory: Callable[[pd.DataFrame | None], Asset]) -> None:
+        asset = asset_factory(None)
+        dates = pd.to_datetime(["2021-01-01", "2022-01-01"])
+        prices = pd.Series([100.0, 121.0], index=dates)
+
+        assert asset.calculate_cagr(prices) == pytest.approx(0.21, abs=1e-3)
+
+    def test_cagr_zero_time_span_is_nan(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        asset = asset_factory(None)
+        prices = pd.Series([100.0], index=pd.to_datetime(["2020-01-01"]))
+
+        assert np.isnan(asset.calculate_cagr(prices))
+
+    def test_volatility(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        asset = asset_factory(None)
+        dates = pd.date_range("2020-01-01", periods=3, freq="D")
+        prices = pd.Series([100.0, 110.0, 99.0], index=dates)
+        expected = pd.Series([0.1, -0.1]).std()
+
+        assert asset.calculate_volatility(prices, "ME") == pytest.approx(expected)
+        assert asset.calculate_volatility(prices, "D") == pytest.approx(
+            expected * np.sqrt(252)
+        )
+
+    def test_cumulative_return(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+
+        cumulative = asset.calculate_cumulative_return(sample_prices["AdjClose"])
+
+        assert cumulative.iloc[0] == pytest.approx(1.05)
+        assert cumulative.iloc[-1] == pytest.approx(1.10)
+
+    def test_drawdown_and_max_drawdown(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+        increasing_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+        prices = sample_prices["AdjClose"]
+
+        drawdown = asset.calculate_drawdown(prices)
+
+        assert drawdown.min() == pytest.approx(1.02 / 1.05 - 1)
+        assert asset.calculate_max_drawdown(prices) == pytest.approx(drawdown.min())
+        assert asset.calculate_max_drawdown(increasing_prices["AdjClose"]) == (
+            pytest.approx(0.0)
+        )
+
+    def test_autocorrelation(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        asset = asset_factory(None)
+        dates = pd.date_range("2020-01-01", periods=5, freq="D")
+        prices = pd.Series([100.0, 110.0, 99.0, 108.9, 98.01], index=dates)
+
+        assert asset.calculate_autocorrelation(prices) == pytest.approx(-1.0)
+
+    def test_autocorrelation_short_series_is_nan(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+
+        assert np.isnan(
+            asset.calculate_autocorrelation(sample_prices["AdjClose"].iloc[:3])
+        )
+
+    def test_autocorrelations(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+        prices = sample_prices["AdjClose"]
+
+        result = asset.calculate_autocorrelations(prices)
+
+        assert set(result) == {"daily", "monthly", "yearly"}
+        assert result["daily"] == pytest.approx(
+            asset.calculate_autocorrelation(prices, "D")
+        )
+        assert np.isnan(result["monthly"])
+        assert np.isnan(result["yearly"])
+
+    def test_rolling_volatility(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+        returns = sample_prices["AdjClose"].pct_change().dropna()
+
+        daily = asset.calculate_rolling_volatility(sample_prices["AdjClose"], 2, "D")
+        pd.testing.assert_series_equal(daily, returns.rolling(2).std() * np.sqrt(252))
+
+        non_daily = asset.calculate_rolling_volatility(
+            sample_prices["AdjClose"], 2, "ME"
+        )
+        pd.testing.assert_series_equal(non_daily, returns.rolling(2).std())
+
+    def test_rolling_sharpe(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        asset = asset_factory(None)
+        dates = pd.date_range("2020-01-31", periods=6, freq="ME")
+        prices = pd.Series([100.0, 105.0, 102.0, 108.0, 110.0, 115.0], index=dates)
+        returns = prices.pct_change().dropna()
+
+        result = asset.calculate_rolling_sharpe(prices, 2, 0.01, "ME")
+        expected = (returns.rolling(2).mean() - 0.01) / returns.rolling(2).std()
+        pd.testing.assert_series_equal(result, expected)
+
+    def test_rolling_sharpe_daily_annualization(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
+        returns = sample_prices["AdjClose"].pct_change().dropna()
+
+        result = asset.calculate_rolling_sharpe(sample_prices["AdjClose"], 2, 0.02, "D")
+        expected = (returns.rolling(2).mean() - 0.02 / 252) / (
+            returns.rolling(2).std() * np.sqrt(252)
+        )
+        pd.testing.assert_series_equal(result, expected)
