@@ -546,19 +546,16 @@ class TestCalculationMethods:
         )
 
     def test_autocorrelations(
-        self,
-        asset_factory: Callable[[pd.DataFrame | None], Asset],
-        sample_prices: pd.DataFrame,
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
     ) -> None:
-        asset = asset_factory(sample_prices)
-        prices = sample_prices["AdjClose"]
+        asset = asset_factory(None)
+        dates = pd.date_range("2020-01-01", periods=5, freq="D")
+        prices = pd.Series([100.0, 110.0, 99.0, 108.9, 98.01], index=dates)
 
         result = asset.calculate_autocorrelations(prices)
 
         assert set(result) == {"daily", "monthly", "yearly"}
-        assert result["daily"] == pytest.approx(
-            asset.calculate_autocorrelation(prices, "D")
-        )
+        assert result["daily"] == pytest.approx(-1.0)
         assert np.isnan(result["monthly"])
         assert np.isnan(result["yearly"])
 
