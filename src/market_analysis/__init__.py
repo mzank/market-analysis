@@ -12,12 +12,19 @@ Public API:
     - Asset: Analyze and visualize individual asset performance
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .asset import Asset
 from .datafetcher import DataFetcher
 
 __all__ = [
     "DataFetcher",
     "Asset",
+    "__version__",
 ]
 
-__version__ = "0.1.0"
+try:
+    # The version is defined once, in pyproject.toml.
+    __version__ = version("market-analysis")
+except PackageNotFoundError:  # running from an uninstalled source checkout
+    __version__ = "0.0.0"

@@ -1,7 +1,14 @@
+from importlib.metadata import PackageNotFoundError, version
+
 project = "market-analysis"
 copyright = "2026, Marco Zank"
 author = "Marco Zank"
-release = "0.1.0"
+
+try:
+    # Keep the documentation version in sync with pyproject.toml.
+    release = version("market-analysis")
+except PackageNotFoundError:  # building docs from an uninstalled source checkout
+    release = "0.0.0"
 
 extensions = [
     "autodoc2",

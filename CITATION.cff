@@ -5,4 +5,5 @@ authors:
   - family-names: Zank
     given-names: Marco
 title: "market-analysis"
+# Keep in sync with pyproject.toml (enforced by tests/test_version.py).
 version: 0.1.0
