@@ -149,7 +149,8 @@ class TestFetch:
         result = asset.fetch()
 
         assert result is not None
-        assert list(result.index.strftime("%Y-%m-%d")) == [
+        res_idx = cast(pd.DatetimeIndex, result.index)
+        assert list(res_idx.strftime("%Y-%m-%d")) == [
             "2020-01-01",
             "2020-01-02",
             "2020-01-03",
