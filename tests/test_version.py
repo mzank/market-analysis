@@ -25,6 +25,11 @@ def test_docs_release_matches_package_version() -> None:
     assert conf["release"] == market_analysis.__version__
 
 
+def test_docs_config_does_not_shadow_sphinx_version() -> None:
+    conf = runpy.run_path(str(REPO_ROOT / "docs" / "conf.py"))
+    assert not callable(conf.get("version"))
+
+
 def test_citation_version_matches_package_version() -> None:
     citation = (REPO_ROOT / "CITATION.cff").read_text(encoding="utf-8")
     match = re.search(r"^version:\s*(\S+)\s*$", citation, flags=re.MULTILINE)

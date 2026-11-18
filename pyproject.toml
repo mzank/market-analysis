@@ -28,7 +28,8 @@ dev = [
     "flake8",
     "flake8-pyproject",
     "pre-commit",
-    "pylint",
+    # Pylint 4 requires astroid 4, which autodoc2 (docs extra) cannot use.
+    "pylint<4",
     "mypy",
     "pandas-stubs",
     "types-setuptools",
@@ -38,7 +39,8 @@ dev = [
 
 docs = [
     "sphinx",
-    "sphinx-autodoc2",
+    # 0.5.0 caps astroid<4; older releases break with astroid 4.
+    "sphinx-autodoc2>=0.5.0",
     "myst-parser",
     "sphinx-rtd-theme"
 ]
