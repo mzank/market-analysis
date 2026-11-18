@@ -117,7 +117,8 @@ class Asset:
         -------
         pandas.Series | None
             Prepared price series, or None if fewer than two prices are
-            available in the requested period.
+            available in the requested period before resampling. After
+            resampling, the returned series may contain fewer observations.
 
         Raises
         ------
