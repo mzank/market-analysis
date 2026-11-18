@@ -347,7 +347,7 @@ pytest --cov=market_analysis --cov-report=term-missing
 
 On every push and pull request to the `main` branch, the following checks are performed automatically:
 1. **Pre-commit:** All formatting, linting, and typing checks.
-2. **Tests:** All unit tests are executed across supported environments.
+2. **Tests:** All unit tests are executed on Python 3.12.
 3. **Docs:** The documentation is built and validated.
 
 On pushes to `main`, the documentation is also automatically deployed to GitHub Pages.
