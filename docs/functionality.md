@@ -46,7 +46,7 @@ The toolkit generates a comprehensive five-panel chart for each asset:
 ## Interface Options
 
 ### Command Line Interface (CLI)
-Designed for quick checks and terminal-based analysis. It provides a summarized text report of an asset's performance directly in the console.
+Designed for quick checks and terminal-based analysis. It prints a summarized text report of an asset's performance directly in the console and saves a multi-panel PDF chart (`Stats_<ticker>.pdf`) to the current working directory.
 
 ### Python API
 Designed for integration into larger research projects or Jupyter notebooks. It offers full programmatic access to the `Asset` and `DataFetcher` classes, allowing for custom data manipulation and advanced plotting.

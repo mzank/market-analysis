@@ -115,7 +115,7 @@ pip install -e .[dev]
 
 ## Command Line Usage (CLI)
 
-The CLI downloads data and prints performance statistics per asset. After installation, the CLI command is available:
+The CLI downloads data, prints performance statistics per asset, and saves a multi-panel PDF chart to the current working directory. After installation, the CLI command is available:
 
 ```bash
 market-analysis --tickers "^GSPC" "BTC-USD" "GC=F" --start 2015-01-01
@@ -128,6 +128,15 @@ market-analysis --tickers "^GSPC" "BTC-USD" "GC=F" --start 2015-01-01
 | `--tickers` | One or more asset tickers           |
 | `--start`   | Start date (YYYY-MM-DD)             |
 | `--end`     | End date (optional, default: today) |
+
+### Output
+
+For each successfully loaded asset the CLI:
+
+- prints the summary statistics at monthly frequency (`"ME"`), and
+- saves a five-panel chart based on daily data to `Stats_<ticker>.pdf` (for example `Stats_^GSPC.pdf`) in the current working directory.
+
+The saved chart uses a logarithmic price scale, a 126-period rolling window, and a 2% annual risk-free rate. These settings are fixed; use the Python API below to customize frequency, scaling, and rolling parameters.
 
 ### Examples
 
