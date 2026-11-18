@@ -323,6 +323,12 @@ class Asset:
         -------
         dict[str, float]
             Lag-1 autocorrelations keyed by "daily", "monthly", "yearly".
+
+        Notes
+        -----
+        Pass native-frequency (unresampled) prices. Resampling for the
+        monthly and yearly variants happens internally; passing already
+        resampled data would mislabel the results.
         """
 
         return {
@@ -427,8 +433,9 @@ class Asset:
         """
 
         prices = self._prepare_prices(start_date, end_date, frequency)
+        raw_prices = self._prepare_prices(start_date, end_date, "D")
 
-        if prices is None:
+        if prices is None or raw_prices is None:
             print(
                 f"\n{self.label}: insufficient data between {start_date} and {end_date}"
             )
@@ -440,7 +447,9 @@ class Asset:
         cagr = self.calculate_cagr(prices, total_return)
         vol_annualized = self.calculate_volatility(prices, frequency)
         max_dd = self.calculate_max_drawdown(prices)
-        auto_correlation = self.calculate_autocorrelations(prices)
+        # Autocorrelations are always reported at daily/monthly/yearly
+        # frequency, so compute them from the unresampled prices.
+        auto_correlation = self.calculate_autocorrelations(raw_prices)
 
         print("\n" + "-" * 80)
         print(f"Asset statistics: {self.label}")

@@ -282,6 +282,33 @@ class TestPrintStats:
         assert "Monthly:" in out
         assert "Yearly:  nan" in out
 
+    def test_autocorrelations_use_unresampled_prices(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        dates = pd.to_datetime(
+            [
+                "2020-01-30",
+                "2020-01-31",
+                "2020-02-28",
+                "2020-02-29",
+                "2020-03-30",
+                "2020-03-31",
+            ]
+        )
+        prices = pd.Series([100.0, 110.0, 99.0, 108.9, 98.01, 107.811], index=dates)
+        asset = asset_factory(pd.DataFrame({"AdjClose": prices}))
+
+        asset.print_asset_stats("2020-01-01", "2020-03-31", frequency="ME")
+
+        out = capsys.readouterr().out
+        expected_daily = asset.calculate_autocorrelation(prices, "D")
+
+        assert expected_daily == pytest.approx(-1.0)
+        assert f"Daily:   {expected_daily:.4f}" in out
+        assert "Daily:   nan" not in out
+
 
 # ---------------------------------------------------------------------
 # Plot Tests
