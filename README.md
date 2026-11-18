@@ -56,7 +56,7 @@ The caching behavior is controlled by constants in `src/market_analysis/config.p
 | Setting          | Default Value     | Description                                           |
 | ---------------- | ----------------- | ----------------------------------------------------- |
 | `CACHE_DIR`      | `"cache_history"` | Directory where cached data is stored.                |
-| `CACHE_MAX_AGE`  | `1`               | Maximum cache age in days before data is refreshed.   |
+| `CACHE_MAX_AGE`  | `1`               | Max lag of newest data behind the last business day.  |
 | `SCHEMA_VERSION` | `"1.0"`           | Version of the cached data schema.                    |
 | `PARQUET_ENGINE` | `"pyarrow"`       | Engine used for storing Parquet files.                |
 | `MAX_WORKERS`    | `6`               | Maximum number of parallel threads for fetching data. |
@@ -75,7 +75,7 @@ This directory is created automatically in your working directory if it does not
 
 ### Cache Duration
 
-According to the default config, cached data is considered valid for 1 day. After this period, the data will be refreshed automatically on the next request.
+Freshness is based on the data itself, not the cache file's modification time. Cached data is reused while its newest observation is no more than `CACHE_MAX_AGE` (1 day by default) behind the most recent business day; otherwise it is refreshed on the next request.
 
 ### Disabling Cache
 

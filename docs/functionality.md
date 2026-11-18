@@ -19,7 +19,7 @@ The project follows a structured data processing sequence:
 The toolkit uses a "Fetch-Through" cache strategy managed by the `CacheManager`:
 
 - **Local Storage**: Data is stored in the `cache_history/` directory using the Apache Parquet format (via `pyarrow`), providing high compression and fast read/write speeds.
-- **Cache Validation**: The system checks the modification time of cached files. If the data is older than the configured `CACHE_MAX_AGE` (default: 1 day), it triggers a background refresh from Yahoo Finance.
+- **Cache Validation**: The system compares the newest observation in the cached data with the most recent business day. If that observation is more than `CACHE_MAX_AGE` (default: 1 day) behind, the data is refreshed from Yahoo Finance on the next request.
 - **Concurrent Fetching**: When loading multiple tickers, the `DataFetcher` utilizes a thread pool (`MAX_WORKERS`) to download data in parallel, significantly reducing wait times.
 
 ## Performance Metrics
