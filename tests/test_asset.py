@@ -401,18 +401,16 @@ class TestPlotStats:
         with pytest.raises(TypeError):
             asset.plot_asset_stats("2020-01-01", "2020-01-05")
 
-    def test_plot_non_daily_branch_executes(self, sample_prices: pd.DataFrame) -> None:
-        from unittest.mock import Mock
+    def test_plot_non_daily_branch_executes(
+        self,
+        asset_factory: Callable[[pd.DataFrame | None], Asset],
+        monkeypatch: pytest.MonkeyPatch,
+        sample_prices: pd.DataFrame,
+    ) -> None:
+        asset = asset_factory(sample_prices)
 
-        import matplotlib.pyplot as plt
-
-        asset = Asset("TEST", "Test Asset", Mock())  # type: ignore
-        asset.df = sample_prices
-
-        def mock_show() -> None:
-            pass
-
-        plt.show = mock_show  # type: ignore[assignment]
+        monkeypatch.setattr("matplotlib.pyplot.close", Mock())
+        monkeypatch.setattr("matplotlib.pyplot.show", Mock())
 
         asset.plot_asset_stats(
             "2020-01-01",
