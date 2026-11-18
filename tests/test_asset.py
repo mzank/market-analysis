@@ -20,6 +20,7 @@ Tests ensure the correctness of outputs, proper cache usage, and that
 plotting functions execute without errors.
 """
 
+import inspect
 from collections.abc import Callable
 from typing import Any, cast
 from unittest.mock import MagicMock, Mock
@@ -347,6 +348,11 @@ class TestPrintStats:
 
 
 class TestPlotStats:
+    def test_default_rolling_window_matches_cli(self) -> None:
+        """The API default should match the window used by the CLI."""
+        param = inspect.signature(Asset.plot_asset_stats).parameters["sharpe_window"]
+        assert param.default == 126
+
     def test_plot_creates_five_axes(
         self,
         asset_factory: Callable[[pd.DataFrame | None], Asset],

@@ -476,7 +476,7 @@ class Asset:
         end_date: TimestampConvertibleTypes,
         frequency: str = "D",
         log_price: bool = False,
-        sharpe_window: int = 63,
+        sharpe_window: int = 126,
         risk_free_rate: float = 0.0,
         figsize: tuple[float, float] = (10, 10),
         save_path: str | None = None,
@@ -503,7 +503,7 @@ class Asset:
             Resampling frequency.
         log_price : bool, default False
             If True, uses logarithmic scale for price axis.
-        sharpe_window : int, default 63
+        sharpe_window : int, default 126
             Rolling window size for volatility and Sharpe ratio.
         risk_free_rate : float, default 0.0
             Annualized risk-free rate used in Sharpe ratio calculation.

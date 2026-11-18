@@ -30,7 +30,7 @@ The `Asset` class computes several critical financial metrics:
 - **Risk Metrics**:
   - **Volatility**: Annualized standard deviation of returns.
   - **Maximum Drawdown**: The peak-to-trough decline during a specific period.
-  - **Rolling Metrics**: Rolling volatility and Sharpe ratio (default 63-day window) to visualize risk evolution over time.
+  - **Rolling Metrics**: Rolling volatility and Sharpe ratio (default 126-day window) to visualize risk evolution over time.
 - **Growth Metrics**: Compound Annual Growth Rate (CAGR) and total cumulative returns.
 
 ## Visualization Engine
