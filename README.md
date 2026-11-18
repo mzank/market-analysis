@@ -224,6 +224,7 @@ The visualization includes the following panels. Plots can be displayed or saved
 ```text
 market-analysis/
 │
+├── .gitignore
 ├── .github/
 │   └── workflows/
 │       ├── docs.yml
@@ -232,6 +233,7 @@ market-analysis/
 │
 ├── docs/
 │   ├── conf.py
+│   ├── functionality.md
 │   └── index.md
 │
 ├── examples/
@@ -245,6 +247,7 @@ market-analysis/
 │       ├── cli.py
 │       ├── config.py
 │       ├── datafetcher.py
+│       ├── py.typed
 │       └── utils.py
 │
 ├── tests/
