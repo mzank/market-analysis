@@ -52,7 +52,8 @@ class Asset:
 
         The method first attempts to load cached data. If no valid or
         fresh cache is available, data is downloaded using yfinance.
-        Prices are normalized to UTC and stored as timezone-naive dates.
+        Exchange-local dates are preserved; timezone information is dropped
+        and dates are normalized to midnight.
 
         Returns
         -------
