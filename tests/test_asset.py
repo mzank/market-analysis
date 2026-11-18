@@ -528,6 +528,19 @@ class TestCalculationMethods:
             pytest.approx(0.0)
         )
 
+    def test_drawdown_includes_first_price_as_peak(
+        self, asset_factory: Callable[[pd.DataFrame | None], Asset]
+    ) -> None:
+        asset = asset_factory(None)
+        dates = pd.date_range("2020-01-01", periods=3, freq="D")
+        prices = pd.Series([100.0, 90.0, 95.0], index=dates)
+
+        drawdown = asset.calculate_drawdown(prices)
+        expected = pd.Series([0.0, -0.1, -0.05], index=dates)
+
+        pd.testing.assert_series_equal(drawdown, expected)
+        assert asset.calculate_max_drawdown(prices) == pytest.approx(-0.10)
+
     def test_autocorrelation(
         self, asset_factory: Callable[[pd.DataFrame | None], Asset]
     ) -> None:

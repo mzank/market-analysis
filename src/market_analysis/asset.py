@@ -260,11 +260,11 @@ class Asset:
         Returns
         -------
         pandas.Series
-            Relative decline from the running cumulative maximum.
+            Relative decline from the running maximum price, including the
+            first price as a possible peak.
         """
 
-        cumulative = self.calculate_cumulative_return(prices)
-        return cumulative / cumulative.cummax() - 1
+        return prices / prices.cummax() - 1
 
     def calculate_max_drawdown(self, prices: pd.Series) -> float:
         """
