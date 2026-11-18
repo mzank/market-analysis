@@ -255,7 +255,8 @@ market-analysis/
 │   ├── test_cachemanager.py
 │   ├── test_cli.py
 │   ├── test_datafetcher.py
-│   └── test_utils.py
+│   ├── test_utils.py
+│   └── test_version.py
 │
 ├── CITATION.cff
 ├── LICENSE
