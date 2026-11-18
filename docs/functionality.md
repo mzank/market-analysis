@@ -6,7 +6,7 @@ The `market-analysis` toolkit is designed to streamline the process of retrievin
 
 The project follows a structured data processing sequence:
 
-1.  **Data Fetching**: Interface with Yahoo Finance (`yfinance`) to retrieve historical OHLCV data.
+1.  **Data Fetching**: Interface with Yahoo Finance (`yfinance`) to retrieve historical price data (adjusted close where available).
 2.  **Local Caching**: Persistence layer using Parquet files to minimize network requests and improve performance.
 3.  **Asset Modeling**: Encapsulation of raw data into high-level `Asset` objects that handle statistical calculations.
 4.  **Analysis**: Computation of key performance indicators like CAGR, Volatility, and Drawdowns.
@@ -26,7 +26,7 @@ The toolkit uses a "Fetch-Through" cache strategy managed by the `CacheManager`:
 
 The `Asset` class computes several critical financial metrics:
 
-- **Returns**: Logarithmic and simple returns for various frequencies (Daily, Monthly, Yearly).
+- **Returns**: Simple and cumulative returns for various frequencies (Daily, Monthly, Yearly).
 - **Risk Metrics**:
   - **Volatility**: Annualized standard deviation of returns.
   - **Maximum Drawdown**: The peak-to-trough decline during a specific period.
