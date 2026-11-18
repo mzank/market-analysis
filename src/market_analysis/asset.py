@@ -95,6 +95,310 @@ class Asset:
         self.cache_manager.save(df, self.ticker)
         return self.df
 
+    def _prepare_prices(
+        self,
+        start_date: TimestampConvertibleTypes,
+        end_date: TimestampConvertibleTypes,
+        frequency: str,
+    ) -> pd.Series | None:
+        """
+        Select and optionally resample prices for the requested period.
+
+        Parameters
+        ----------
+        start_date : TimestampConvertibleTypes
+            Start date of the analysis period.
+        end_date : TimestampConvertibleTypes
+            End date of the analysis period.
+        frequency : str
+            Resampling frequency (e.g., "D", "ME", "YE").
+
+        Returns
+        -------
+        pandas.Series | None
+            Prepared price series, or None if fewer than two prices are
+            available in the requested period before resampling. After
+            resampling, the returned series may contain fewer observations.
+
+        Raises
+        ------
+        TypeError
+            If fetch() has not been called or no data is available.
+        """
+
+        if self.df is None:
+            raise TypeError(f"No data available for {self.label}. Call fetch() first.")
+
+        start = pd.Timestamp(start_date)
+        end = pd.Timestamp(end_date)
+
+        prices = self.df["AdjClose"].loc[start:end].copy()
+
+        if prices.empty or len(prices) < 2:
+            return None
+
+        if frequency != "D":
+            prices = prices.resample(frequency).last()
+
+        return prices
+
+    def _returns(self, prices: pd.Series) -> pd.Series:
+        """
+        Compute simple period returns from a price series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        pandas.Series
+            Percentage changes with missing values removed.
+        """
+
+        return prices.pct_change().dropna()
+
+    def calculate_total_return(self, prices: pd.Series) -> float:
+        """
+        Calculate the total return over a price series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        float
+            Return from the first to the last price.
+        """
+
+        return float(prices.iloc[-1] / prices.iloc[0] - 1)
+
+    def calculate_cagr(
+        self, prices: pd.Series, total_return: float | None = None
+    ) -> float:
+        """
+        Calculate the compound annual growth rate of a price series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+        total_return : float | None, default None
+            Precomputed total return; calculated from prices when omitted.
+
+        Returns
+        -------
+        float
+            Annualized growth rate, or NaN for a zero/negative time span.
+        """
+
+        if total_return is None:
+            total_return = self.calculate_total_return(prices)
+
+        start = pd.Timestamp(prices.index[0])
+        end = pd.Timestamp(prices.index[-1])
+        n_years = (end - start).days / 365.25
+
+        if n_years <= 0:
+            return float("nan")
+
+        return float((1 + total_return) ** (1 / n_years) - 1)
+
+    def calculate_volatility(self, prices: pd.Series, frequency: str = "D") -> float:
+        """
+        Calculate the volatility of returns over a price series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+        frequency : str, default "D"
+            Sampling frequency; daily returns are annualized with sqrt(252).
+
+        Returns
+        -------
+        float
+            Standard deviation of returns (annualized for daily data).
+        """
+
+        volatility = self._returns(prices).std()
+
+        if frequency == "D":
+            return float(volatility * np.sqrt(252))
+
+        return float(volatility)
+
+    def calculate_cumulative_return(self, prices: pd.Series) -> pd.Series:
+        """
+        Calculate the cumulative return series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        pandas.Series
+            Cumulative growth factor of 1 plus returns.
+        """
+
+        return (1 + self._returns(prices)).cumprod()
+
+    def calculate_drawdown(self, prices: pd.Series) -> pd.Series:
+        """
+        Calculate the drawdown series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        pandas.Series
+            Relative decline from the running maximum price, including the
+            first price as a possible peak.
+        """
+
+        return prices / prices.cummax() - 1
+
+    def calculate_max_drawdown(self, prices: pd.Series) -> float:
+        """
+        Calculate the maximum drawdown of a price series.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        float
+            Largest peak-to-trough decline (zero or negative).
+        """
+
+        return float(self.calculate_drawdown(prices).min())
+
+    def calculate_autocorrelation(
+        self, prices: pd.Series, frequency: str = "D"
+    ) -> float:
+        """
+        Calculate lag-1 autocorrelation of returns.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+        frequency : str, default "D"
+            Frequency used to resample prices before computing returns.
+
+        Returns
+        -------
+        float
+            Lag-1 autocorrelation, or NaN for fewer than three returns.
+        """
+
+        data = prices.resample(frequency).last() if frequency != "D" else prices
+        returns = self._returns(data)
+
+        if len(returns) < 3:
+            return float("nan")
+
+        return float(returns.autocorr(1))
+
+    def calculate_autocorrelations(self, prices: pd.Series) -> dict[str, float]:
+        """
+        Calculate daily, monthly, and yearly return autocorrelations.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+
+        Returns
+        -------
+        dict[str, float]
+            Lag-1 autocorrelations keyed by "daily", "monthly", "yearly".
+
+        Notes
+        -----
+        Pass native-frequency (unresampled) prices. Resampling for the
+        monthly and yearly variants happens internally; passing already
+        resampled data would mislabel the results.
+        """
+
+        return {
+            "daily": self.calculate_autocorrelation(prices, "D"),
+            "monthly": self.calculate_autocorrelation(prices, "ME"),
+            "yearly": self.calculate_autocorrelation(prices, "YE"),
+        }
+
+    def calculate_rolling_volatility(
+        self, prices: pd.Series, window: int, frequency: str = "D"
+    ) -> pd.Series:
+        """
+        Calculate rolling volatility of returns.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+        window : int
+            Rolling window size.
+        frequency : str, default "D"
+            Sampling frequency; daily returns are annualized with sqrt(252).
+
+        Returns
+        -------
+        pandas.Series
+            Rolling volatility series.
+        """
+
+        rolling = self._returns(prices).rolling(window).std()
+
+        if frequency == "D":
+            return rolling * np.sqrt(252)
+
+        return rolling
+
+    def calculate_rolling_sharpe(
+        self,
+        prices: pd.Series,
+        window: int,
+        risk_free_rate: float,
+        frequency: str = "D",
+    ) -> pd.Series:
+        """
+        Calculate the rolling Sharpe ratio.
+
+        Parameters
+        ----------
+        prices : pandas.Series
+            Price series.
+        window : int
+            Rolling window size.
+        risk_free_rate : float
+            Annualized risk-free rate.
+        frequency : str, default "D"
+            Sampling frequency; determines the annualization of the rate
+            and the volatility used in the denominator.
+
+        Returns
+        -------
+        pandas.Series
+            Rolling Sharpe ratio series.
+        """
+
+        rf_period = risk_free_rate / 252 if frequency == "D" else risk_free_rate
+        rolling_vol = self.calculate_rolling_volatility(prices, window, frequency)
+        rolling_mean = self._returns(prices).rolling(window).mean()
+
+        return (rolling_mean - rf_period) / rolling_vol
+
     def print_asset_stats(
         self,
         start_date: TimestampConvertibleTypes,
@@ -128,60 +432,24 @@ class Asset:
         None
         """
 
-        if self.df is None:
-            raise TypeError(f"No data available for {self.label}. Call fetch() first.")
+        prices = self._prepare_prices(start_date, end_date, frequency)
+        raw_prices = self._prepare_prices(start_date, end_date, "D")
 
-        start = pd.Timestamp(start_date)
-        end = pd.Timestamp(end_date)
-
-        prices = self.df["AdjClose"].loc[start:end].copy()
-
-        if prices.empty or len(prices) < 2:
+        if prices is None or raw_prices is None:
             print(
                 f"\n{self.label}: insufficient data between {start_date} and {end_date}"
             )
             return
 
-        # Resample if needed
-        if frequency != "D":
-            prices = prices.resample(frequency).last()
-
-        returns = prices.pct_change().dropna()
-
-        # Stats
         start_price = prices.iloc[0]
         end_price = prices.iloc[-1]
-        total_return = end_price / start_price - 1
-
-        n_years = (prices.index[-1] - prices.index[0]).days / 365.25
-        cagr = (1 + total_return) ** (1 / n_years) - 1 if n_years > 0 else np.nan
-
-        vol_annualized = (
-            returns.std() * np.sqrt(252) if frequency == "D" else returns.std()
-        )
-
-        # Max drawdown
-        cum = (1 + returns).cumprod()
-        running_max = cum.cummax()
-        drawdown = cum / running_max - 1
-        max_dd = drawdown.min()
-
-        # Autocorrelation
-        daily_returns = prices.pct_change().dropna()
-        monthly_returns = prices.resample("ME").last().pct_change().dropna()
-        yearly_returns = prices.resample("YE").last().pct_change().dropna()
-
-        ac_daily = daily_returns.autocorr(1) if len(daily_returns) >= 3 else np.nan
-        ac_monthly = (
-            monthly_returns.autocorr(1) if len(monthly_returns) >= 3 else np.nan
-        )
-        ac_yearly = yearly_returns.autocorr(1) if len(yearly_returns) >= 3 else np.nan
-
-        auto_correlation: dict[str, float] = {
-            "daily": ac_daily,
-            "monthly": ac_monthly,
-            "yearly": ac_yearly,
-        }
+        total_return = self.calculate_total_return(prices)
+        cagr = self.calculate_cagr(prices, total_return)
+        vol_annualized = self.calculate_volatility(prices, frequency)
+        max_dd = self.calculate_max_drawdown(prices)
+        # Autocorrelations are always reported at daily/monthly/yearly
+        # frequency, so compute them from the unresampled prices.
+        auto_correlation = self.calculate_autocorrelations(raw_prices)
 
         print("\n" + "-" * 80)
         print(f"Asset statistics: {self.label}")
@@ -253,42 +521,20 @@ class Asset:
         None
         """
 
-        if self.df is None:
-            raise TypeError(f"No data available for {self.label}. Call fetch() first.")
+        prices = self._prepare_prices(start_date, end_date, frequency)
 
-        start = pd.Timestamp(start_date)
-        end = pd.Timestamp(end_date)
-
-        prices = self.df["AdjClose"].loc[start:end].copy()
-
-        if prices.empty or len(prices) < 2:
+        if prices is None:
             print(f"{self.label}: insufficient data to plot.")
             return
 
-        # Resample if needed
-        if frequency != "D":
-            prices = prices.resample(frequency).last()
-
-        returns = prices.pct_change().dropna()
-
-        # --- Cumulative return ---
-        cumulative = (1 + returns).cumprod()
-
-        # --- Drawdown ---
-        running_max = cumulative.cummax()
-        drawdown = cumulative / running_max - 1
-
-        # --- Rolling volatility ---
-        if frequency == "D":
-            rolling_vol = returns.rolling(sharpe_window).std() * np.sqrt(252)
-            rf_period = risk_free_rate / 252
-        else:
-            rolling_vol = returns.rolling(sharpe_window).std()
-            rf_period = risk_free_rate
-
-        # --- Rolling Sharpe ratio ---
-        rolling_mean = returns.rolling(sharpe_window).mean()
-        rolling_sharpe = (rolling_mean - rf_period) / rolling_vol
+        cumulative = self.calculate_cumulative_return(prices)
+        drawdown = self.calculate_drawdown(prices)
+        rolling_vol = self.calculate_rolling_volatility(
+            prices, sharpe_window, frequency
+        )
+        rolling_sharpe = self.calculate_rolling_sharpe(
+            prices, sharpe_window, risk_free_rate, frequency
+        )
 
         fig, axes = plt.subplots(5, 1, figsize=figsize, sharex=True)
 
